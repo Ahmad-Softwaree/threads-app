@@ -5,6 +5,7 @@ import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
 import Thread from "../models/thread.model";
 import { FilterQuery, SortOrder } from "mongoose";
+import Community from "../models/community.model";
 
 interface Params {
   userId: string;
@@ -74,6 +75,16 @@ export async function fetchUserThreads(userId: string) {
         },
       },
     });
+    for (const thread of threads.threads) {
+      if (thread.community) {
+        await thread.populate({
+          path: "community",
+          model: Community,
+          select: "id",
+        });
+      }
+      await threads.save();
+    }
     return threads;
   } catch (error: any) {
     throw new Error(`Failed to fetch user: ${error.message}`);
@@ -113,7 +124,7 @@ export async function fetchUsers({
     }
 
     const sortOptions = {
-      createdAt: sortBy,
+      createAt: sortBy,
     };
 
     const usersQuery = User.find(query)

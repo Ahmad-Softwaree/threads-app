@@ -1,5 +1,7 @@
+import { formatDateString } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import DeleteThread from "../forms/DeleteThread";
 
 interface Props {
   id: string;
@@ -16,7 +18,7 @@ interface Props {
     name: string;
     image: string;
   } | null;
-  createdAt: string;
+  createAt: string;
   comments: {
     author: {
       image: string;
@@ -32,13 +34,13 @@ export default function ThreadCard({
   content,
   author,
   community,
-  createdAt,
+  createAt,
   comments,
   isComment,
 }: Props) {
   return (
     <article
-      className={`flex flex-col w-full rounded-xl p-7 ${
+      className={`flex flex-col w-full rounded-xl ${
         isComment ? "px-0 xs:px-7" : "bg-dark-2 p-7"
       }`}
     >
@@ -109,6 +111,56 @@ export default function ThreadCard({
           </div>
         </div>
       </div>
+
+      <DeleteThread
+        threadId={JSON.stringify(id)}
+        currentUserId={currentUserId}
+        authorId={author.id}
+        parentId={parentId}
+        isComment={isComment}
+      />
+
+      {!isComment && comments.length > 0 && (
+        <div className="ml-1 mt-3 flex items-center gap-2">
+          {comments.slice(0, 2).map((comment, index) => (
+            <Image
+              key={index}
+              src={comment.author.image}
+              alt={`user_${index}`}
+              width={24}
+              height={24}
+              className={`${index !== 0 && "-ml-5"} rounded-full object-cover`}
+            />
+          ))}
+
+          <Link href={`/thread/${id}`}>
+            <p className="mt-1 text-subtle-medium text-gray-1">
+              {comments.length} repl{comments.length > 1 ? "ies" : "y"}
+            </p>
+          </Link>
+        </div>
+      )}
+
+      {/* TODO: Delete Thread */}
+      {/* TODO: Show Comment Logos */}
+
+      {!isComment && community && (
+        <Link
+          className="mt-5 flex items-center"
+          href={`/communities/${community.id}`}
+        >
+          <p className="text-subtle-medium text-gray-1">
+            {formatDateString(createAt)} -{community.name} Community
+          </p>
+          <Image
+            src={community.image}
+            alt="image"
+            height={14}
+            width={14}
+            className="ml-1 rounded-full object-cover"
+          />
+        </Link>
+      )}
     </article>
   );
 }
